@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title></title>
+    <meta charset="utf-8" />
+    <script src="jquery-3.1.1.min.js"></script>
+    <script src="knockout-3.4.2.js"></script>
+    <script type="text/javascript">
+        
+
+        $(document).ready(function() {
+
+            var customerViewModel = function() {
+            var self = this;
+            self.candidateId = ko.observable("");
+            self.name = ko.observable("");
+            self.emailId = ko.observable("");
+            self.searchKey = ko.observable("");
+        
+            var candidate = {
+                candidateId: self.candidateId,  
+                name: self.name,  
+                emailId: self.emailId,  
+            };
+            self.candidate = ko.observable();  
+            self.candidates = ko.observableArray();  
+
+            self.getAllCandidatesDetails = function () {
+                $.ajax({
+                    url: 'https://i1ymqxk07d.execute-api.ap-south-1.amazonaws.com/Dev/candidatedetails/id',
+                    cache: false,
+                    type: 'GET',
+                    data: {},
+                    success: function (data) {
+                        self.candidates(data);
+                    }
+                });
+            }
+            
+            self.getCandidateDetails = function () {              
+                $.ajax({
+                    url: 'https://i1ymqxk07d.execute-api.ap-south-1.amazonaws.com/Dev/candidatedetails',
+                    cache: false,
+                    type: 'GET',                   
+                    data: { "candidateId": self.searchKey() },
+                    success: function (data) {              
+                        self.candidateId(data.Item.candidateID)
+                        self.name(data.Item.name),
+                        self.emailId(data.Item.emailId)
+                    }
+                });
+            }
+            self.delete = function(candidate) {  
+            var id = candidate.candidateId;    
+            $.ajax({  
+                url: 'https://i1ymqxk07d.execute-api.ap-south-1.amazonaws.com/Dev/candidatedetails',  
+                cache: false,  
+                type: 'POST',  
+                data: ko.toJSON(id),  
+                success: function(data) {  
+                    self.candidates.remove(candidate);  
+                    //   alert("Record Deleted Successfully");  
+                }  
+            }).fail(  
+                function(xhr, textStatus, err) {  
+                    alert(err);  
+                });  
+        }  
+    }  
+            } 
+            var viewModel = new customerViewModel();
+            ko.applyBindings(viewModel);
+         });
+
+       
+    </script>
+</head>
+<body>
+    <table>
+        <tr>
+            <td>Search Key(candidateId):</td>
+            <td><input type="text" id="txtSearchKey" data-bind="value : searchKey"/></td>
+        </tr>
+    </table>
+
+    <br />
+  
+    <table id="CandidateDetails">
+        <thead>
+            <tr>
+                <td>Candidate Id:</td>
+                <td><label id="candidateId" data-bind="text: candidateId"/></td>
+            </tr>
+
+            <tr>
+                <td>Name:</td>
+                <td><label id="name" data-bind="text: name"/></td>
+            </tr>
+            <tr>
+                <td>Email:</td>
+                <td><label id="emailId" data-bind="text: emailId"/></td>
+            </tr>
+          
+        </thead>
+      
+        </table>
+
+    <br />
+  
+  <table>
+<tr>
+    <td><input type="button" value="CandidateDetails" data-bind="click: $root.getCandidateDetails()"/> </td>
+    <td><input type="button" value="AllCandidateDetails" data-bind="click: $root.getAllCandidateDetails()"/> </td>
+    <td><input type="button" value="deleteId" data-bind="click: $root.delete()"/> </td>
+</tr>
+  </table>
+</body>
+</html>
